@@ -252,7 +252,7 @@
     function goBackToStep1() { showPage('page-select-15'); }
     function goBackToStep2() { state.removalSelection.clear(); populateGrid('grid-remove-5-from-15', state.phase2_15, new Set()); updateCounter('counter-step2', 0, 5, 'counter_removed'); showPage('page-remove-5-from-15'); }
     function goBackToStep3() { state.removalSelection.clear(); populateGrid('grid-remove-5-from-10', state.phase3_10, new Set()); updateCounter('counter-step3', 0, 5, 'counter_removed'); showPage('page-remove-5-from-10'); }
-    function showConfirmationModal(titleKey, textKey, confirmAction) { modalTitle.textContent = translations[state.language][titleKey]; modalText.textContent = translations[state.language][textKey]; modalConfirmBtn.onclick = () => { closeModal(); confirmAction(); }; modal.style.display = 'block'; }
+    function showConfirmationModal(titleKey, textKey, confirmAction) { modalTitle.textContent = translations[state.language][titleKey]; modalText.textContent = translations[state.language][textKey]; modalConfirmBtn.onclick = () => { closeModal(); confirmAction(); }; document.getElementById('modal-btn-back').onclick = closeModal; modal.style.display = 'block'; }
     function closeModal() { modal.style.display = 'none'; }
     function updateCounter(counterId, current, total, actionKey) { const el = document.getElementById(counterId); if (el) el.textContent = `${current} / ${total} ${translations[state.language][actionKey]}`; }
     function populateGrid(gridId, values, selectionSet) {
@@ -330,6 +330,15 @@
         });
     }
     document.addEventListener('DOMContentLoaded', restartJourney);
+    document.addEventListener('keydown', (event) => {
+      if (modal.style.display === 'block') {
+        if (event.key === 'Escape') {
+          closeModal();
+        } else if (event.key === 'Enter') {
+          modalConfirmBtn.click();
+        }
+      }
+    });
   </script>
 </body>
-</html>
+</html></html>
