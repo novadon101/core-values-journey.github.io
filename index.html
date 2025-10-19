@@ -4,17 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Core Values Journey</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com?v=2">
+  <link rel="preconnect" href="https://fonts.gstatic.com?v=2" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
     :root {
-      --primary-bg: #FFF9EC; --heading-color: #2c2c4e; --text-color: #4a4a68; --accent-blue: #aee2ff; --accent-peach: #ffd6a5; --selection-green: #28a745; --removal-red: #dc3545; --card-bg: #ffffff; --overlay-bg: rgba(255, 249, 236, 0.85); --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --primary-bg: #FFF9EC; --heading-color: #2c2c4e; --text-color: #4a4a68; --accent-blue: #aee2ff; --accent-peach: #ffd6a5; --selection-green: #28a745; --removal-red: #dc3545; --card-bg: #e0e0e0; --overlay-bg: rgba(255, 249, 236, 0.85); --shadow: 8px 8px 16px #d1d1d1, -8px -8px 16px #ffffff;
     }
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Poppins', sans-serif; background-color: var(--primary-bg); color: var(--text-color); overflow: hidden; }
-    .page { display: none; position: absolute; inset: 0; background-size: cover; background-position: center; animation: fadeIn 1s ease-in-out; }
+    .page { display: none; position: absolute; inset: 0; background-size: cover; background-position: center; background-attachment: fixed; animation: fadeIn 1s ease-in-out; }
     .page.active { display: block; }
     .overlay { position: absolute; inset: 0; background: var(--overlay-bg); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; text-align: center; padding: 5vh 20px; overflow-y: auto; box-sizing: border-box; }
     h1, h2 { color: var(--heading-color); font-weight: 700; margin: 0 0 10px 0; }
@@ -25,13 +26,16 @@
     .page-content { max-width: 1300px; width: 100%; display: flex; flex-direction: column; align-items: center; }
     .counter { background-color: rgba(255, 255, 255, 0.8); color: var(--heading-color); padding: 5px 20px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; margin-bottom: 15px; display: inline-block; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
     .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; width: 95%; max-width: 1200px; margin: 15px 0; }
-    .value-card { background-color: var(--card-bg); border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 5px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; display: flex; justify-content: center; align-items: center; min-height: 36px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .value-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
-    .value-card.selected-green { background-color: var(--selection-green); color: white; border-color: var(--selection-green); }
-    .value-card.selected-red { background-color: var(--removal-red); color: white; border-color: var(--removal-red); }
+    .value-card { background-color: var(--card-bg); border: 1px solid black; border-radius: 20px; padding: 8px 5px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; display: flex; justify-content: center; align-items: center; min-height: 36px; box-shadow: var(--shadow); user-select: none; -webkit-user-select: none; }
+    .value-card:hover { transform: translateY(-3px); box-shadow: 12px 12px 24px #d1d1d1, -12px -12px 24px #ffffff; }
+    .value-card.selected-green { background-color: var(--selection-green); color: white; }
+    .value-card.selected-red { background-color: var(--removal-red); color: white; }
+    .value-card.animate { animation: pop 0.3s ease; }
+    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     .button-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
     button { background: linear-gradient(90deg, var(--accent-blue), var(--accent-peach)); color: var(--heading-color); border: none; padding: 14px 35px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .restart-btn { background: linear-gradient(90deg, var(--accent-peach), var(--accent-blue)) !important; }
     .name-input-container { display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 500px; margin-bottom: 5px; align-items: center; }
     .name-input { font-family: 'Poppins', sans-serif; font-size: 1.1rem; padding: 12px 20px; border-radius: 50px; border: 2px solid #ccc; width: 100%; text-align: center; transition: border-color 0.3s; box-sizing: border-box; }
     .name-input.input-error { border-color: var(--removal-red); }
@@ -40,7 +44,6 @@
     .modal-content { background-color: white; margin: 15% auto; padding: 30px; border-radius: 15px; max-width: 500px; text-align: center; box-shadow: var(--shadow); }
     #modal-title { margin-bottom: 10px; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    
     #certificate { padding: 10px; border-radius: 15px; background: var(--accent-blue); margin-top: 20px; max-width: 750px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
     .cert-border { border: 2px solid #fff; background: linear-gradient(135deg, #f5f7fa, #eef2f7); padding: 30px; border-radius: 10px; }
     .cert-header { text-align: center; }
@@ -54,7 +57,8 @@
     .cert-footer { border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px; }
     #cert-quote { font-style: italic; font-size: 1rem; line-height: 1.5; padding: 0 10px; }
     #cert-date { font-size: 0.9rem; color: #777; margin-top: 15px; }
-
+    #tooltip { display: none; position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1000; max-width: 200px; text-align: center; }
+    #mute-button { position: fixed; top: 10px; right: 10px; z-index: 1000; background: white; border: 1px solid #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
     @media print {
       body.is-printing > *:not(.print-container) { display: none !important; }
       body.is-printing .print-container { display: block !important; }
@@ -70,7 +74,6 @@
   </style>
 </head>
 <body>
-
   <div id="page-language" class="page active">
     <div class="overlay">
         <div class="page-content">
@@ -83,28 +86,22 @@
         </div>
     </div>
   </div>
-
-  <div id="page-welcome" class="page" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2070&v=1');">
+  <div id="page-welcome" class="page" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2070&v=2');">
     <div class="overlay"><div class="page-content"><h1 data-translate-key="welcome_title"></h1><p data-translate-key="welcome_p1"></p><div class="name-input-container"><input type="text" id="first-name-input" class="name-input"><input type="text" id="last-name-input" class="name-input"></div><p id="name-error" class="error-message"></p><button onclick="startJourney()" data-translate-key="btn_begin"></button></div></div>
   </div>
-  
-  <div id="page-select-15" class="page" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2070&v=1');">
+  <div id="page-select-15" class="page" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2070&v=2');">
     <div class="overlay top-aligned-overlay"><div class="page-content"><h2><span data-translate-key="step1_h2_p1"></span><span class="user-name-display"></span><span data-translate-key="step1_h2_p2"></span></h2><p data-translate-key="step1_p"></p><div id="counter-step1" class="counter"></div><div id="grid-select-15" class="value-grid"></div></div></div>
   </div>
-
-  <div id="page-remove-5-from-15" class="page" style="background-image: url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2076&v=1');">
+  <div id="page-remove-5-from-15" class="page" style="background-image: url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2076&v=2');">
       <div class="overlay top-aligned-overlay"><div class="page-content"><h2><span data-translate-key="step2_h2_p1"></span><span class="user-name-display"></span><span data-translate-key="step2_h2_p2"></span></h2><p data-translate-key="step2_p"></p><div id="counter-step2" class="counter"></div><div id="grid-remove-5-from-15" class="value-grid"></div><div class="button-group"><button onclick="goBackToStep1()" data-translate-key="btn_back"></button></div></div></div>
   </div>
-
-  <div id="page-remove-5-from-10" class="page" style="background-image: url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2070&v=1');">
+  <div id="page-remove-5-from-10" class="page" style="background-image: url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2070&v=2');">
     <div class="overlay top-aligned-overlay"><div class="page-content"><h2><span data-translate-key="step3_h2_p1"></span><span class="user-name-display"></span><span data-translate-key="step3_h2_p2"></span></h2><p data-translate-key="step3_p"></p><div id="counter-step3" class="counter"></div><div id="grid-remove-5-from-10" class="value-grid"></div><div class="button-group"><button onclick="goBackToStep2()" data-translate-key="btn_back"></button></div></div></div>
   </div>
-
-  <div id="page-remove-2-from-5" class="page" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=2070&v=1');">
+  <div id="page-remove-2-from-5" class="page" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=2070&v=2');">
     <div class="overlay top-aligned-overlay"><div class="page-content"><h2><span data-translate-key="step4_h2_p1"></span><span class="user-name-display"></span><span data-translate-key="step4_h2_p2"></span></h2><p data-translate-key="step4_p"></p><div id="counter-step4" class="counter"></div><div id="grid-remove-2-from-5" class="value-grid"></div><div class="button-group"><button onclick="goBackToStep3()" data-translate-key="btn_back"></button></div></div></div>
   </div>
-  
-  <div id="page-final" class="page" style="background-image: url('https://images.unsplash.com/photo-1494500764479-0c8f2919a3d8?auto=format&fit=crop&w=2070&v=1');">
+  <div id="page-final" class="page" style="background-image: url('https://images.unsplash.com/photo-1494500764479-0c8f2919a3d8?auto=format&fit=crop&w=2070&v=2');">
     <div class="overlay top-aligned-overlay">
         <div id="certificate-wrapper" class="page-content">
             <h1 data-translate-key="final_title"></h1>
@@ -127,12 +124,13 @@
             </div>
             <div class="button-group">
                 <button onclick="downloadAsPDF()" data-translate-key="btn_pdf"></button>
+                <button onclick="shareTwitter()" data-translate-key="btn_share_twitter">Share on X</button>
+                <button onclick="shareLinkedIn()" data-translate-key="btn_share_linkedin">Share on LinkedIn</button>
             </div>
-            <button onclick="restartJourney()" style="margin-top: 20px;" data-translate-key="btn_restart"></button>
+            <button onclick="restartJourney()" class="restart-btn" data-translate-key="btn_restart"></button>
         </div>
     </div>
   </div>
-
   <div id="confirmation-modal" class="modal">
     <div class="modal-content">
       <h2 id="modal-title"></h2><p id="modal-text"></p>
@@ -142,40 +140,44 @@
       </div>
     </div>
   </div>
-
+  <div id="tooltip"></div>
+  <button id="mute-button" onclick="toggleMute()">🔊 Mute</button>
   <script>
     const translations = {
       en: {
         allValues: [ 'Acceptance', 'Accountability', 'Achievement', 'Ambition', 'Appreciation', 'Authenticity', 'Balance', 'Bravery', 'Calmness', 'Charity', 'Commitment', 'Community', 'Compassion', 'Confidence', 'Connection', 'Consistency', 'Contentment', 'Contribution', 'Cooperation', 'Courage', 'Creativity', 'Curiosity', 'Diligence', 'Discipline', 'Empathy', 'Encouragement', 'Equality', 'Excellence', 'Fairness', 'Faith', 'Family', 'Flexibility', 'Forgiveness', 'Freedom', 'Friendship', 'Generosity', 'Giving', 'Gratitude', 'Growth', 'Happiness', 'Harmony', 'Health', 'Honesty', 'Hope', 'Humility', 'Humor', 'Inclusion', 'Independence', 'Influence', 'Innovation', 'Integrity', 'Joy', 'Justice', 'Kindness', 'Knowledge', 'Leadership', 'Learning', 'Love', 'Loyalty', 'Open-mindedness', 'Optimism', 'Patience', 'Perseverance', 'Resilience', 'Responsibility', 'Self-Respect' ],
+        definitions: { 'Acceptance': 'Embracing others without judgment.', 'Accountability': 'Taking responsibility for one\'s actions.', 'Achievement': 'Accomplishing goals and milestones.', 'Ambition': 'Drive to succeed and advance.', 'Appreciation': 'Recognizing and enjoying the good qualities of someone or something.', 'Authenticity': 'Being true to one\'s own personality, spirit, or character.', 'Balance': 'Maintaining equilibrium in life aspects.', 'Bravery': 'Courage in facing challenges.', 'Calmness': 'State of peace and composure.', 'Charity': 'Giving to those in need.', 'Commitment': 'Dedication to promises and goals.', 'Community': 'Sense of belonging and support among people.', 'Compassion': 'Empathy and concern for others\' suffering.', 'Confidence': 'Self-assurance in abilities.', 'Connection': 'Building meaningful relationships.', 'Consistency': 'Steadfastness in behavior and actions.', 'Contentment': 'Satisfaction with what one has.', 'Contribution': 'Giving back to others or society.', 'Cooperation': 'Working together harmoniously.', 'Courage': 'Boldness in adversity.', 'Creativity': 'Generating original ideas and expressions.', 'Curiosity': 'Desire to learn and explore.', 'Diligence': 'Persistent effort and care in tasks.', 'Discipline': 'Self-control and structured effort.', 'Empathy': 'Understanding and sharing others\' feelings.', 'Encouragement': 'Supporting and inspiring others.', 'Equality': 'Fair treatment for all.', 'Excellence': 'Striving for the highest quality.', 'Fairness': 'Impartial and just treatment.', 'Faith': 'Belief in something greater than oneself.', 'Family': 'Prioritizing familial bonds.', 'Flexibility': 'Adaptability to change.', 'Forgiveness': 'Letting go of resentment.', 'Freedom': 'Liberty and autonomy.', 'Friendship': 'Close, supportive relationships.', 'Generosity': 'Willingness to give freely.', 'Giving': 'Sharing resources or time.', 'Gratitude': 'Thankfulness for blessings.', 'Growth': 'Personal development and progress.', 'Happiness': 'State of joy and fulfillment.', 'Harmony': 'Peaceful coexistence.', 'Health': 'Well-being of body and mind.', 'Honesty': 'Truthfulness and integrity.', 'Hope': 'Optimism for the future.', 'Humility': 'Modesty and lack of arrogance.', 'Humor': 'Sense of fun and lightheartedness.', 'Inclusion': 'Embracing diversity and belonging.', 'Independence': 'Self-sufficiency.', 'Influence': 'Ability to affect others.', 'Innovation': 'Creating new ideas or methods.', 'Integrity': 'Moral uprightness and consistency.', 'Joy': 'Deep sense of delight.', 'Justice': 'Fairness in moral and legal matters.', 'Kindness': 'Compassionate and benevolent actions.', 'Knowledge': 'Pursuit and possession of information.', 'Leadership': 'Guiding and inspiring others.', 'Learning': 'Acquiring new skills and understanding.', 'Love': 'Deep affection and care.', 'Loyalty': 'Faithfulness to commitments.', 'Open-mindedness': 'Willingness to consider new ideas.', 'Optimism': 'Positive outlook.', 'Patience': 'Endurance in waiting or difficulties.', 'Perseverance': 'Persistence through challenges.', 'Resilience': 'Ability to recover from setbacks.', 'Responsibility': 'Duty to act accountably.', 'Self-Respect': 'Valuing oneself.' },
         lang_title: "Choose Your Language", lang_subtitle: "Elige Tu Idioma",
         welcome_title: "Welcome to Your Core Values Journey",
         welcome_p1: "This is a quiet moment to reconnect with what truly guides you. To begin, please enter your name below.",
         placeholder_first_name: "First Name", placeholder_last_name: "Last Name",
         error_name: "Please enter both your first and last name.",
         btn_begin: "Begin My Journey",
-        step1_h2_p1: "Let's begin, ", step1_h2_p2: ". Here is your first step.",
-        step1_p: "Explore the values below and select up to 15 that resonate with you. These can be values that represent you today or qualities you want to cultivate in the future. Let yourself be guided by what you feel, more than what you think.",
+        step1_h2_p1: "Let's begin, ", step1_h2_p2: ". Here is your first step on this reflective path.",
+        step1_p: "Explore the values below and select up to 15 that resonate with you. These can be values that represent you today or qualities you aspire to cultivate. Hover (or long-press on mobile) over each for a brief insight, and let your intuition guide you.",
         counter_selected: "Selected",
-        step2_h2_p1: "Alright ", step2_h2_p2: ". Let’s focus a bit more.",
+        step2_h2_p1: "Alright ", step2_h2_p2: ". Let’s focus a bit more as we refine your essence.",
         step2_p: "From the values you chose, pick five that you can set aside for now. This step will help you discover which ones are most essential to you.",
         counter_removed: "Removed",
-        step3_h2_p1: "Great work, ", step3_h2_p2: ". Now refine to 5.",
+        step3_h2_p1: "Great work, ", step3_h2_p2: ". Now refine to 5, embracing the clarity that emerges.",
         step3_p: "This can be challenging, but it brings great clarity. From your remaining values, select 5 more to set aside.",
         step4_h2_p1: "This is the final step, ", step4_h2_p2: "!",
         step4_p: "From your final 5 values, choose 2 that you could set aside. The ones that remain will reflect what truly guides you.",
         final_title: "Your Journey is Complete!",
-        final_p1: "Congratulations, ", final_p2: "! Here is your personal certificate of core values.",
+        final_p1: "Congratulations, ", final_p2: "! Here is your personal certificate of core values, a compass for your path ahead.",
         cert_title: "A Certificate of Core Values",
         cert_message: "These three values represent your authentic compass. Let them guide you with clarity and purpose in all that you do.",
         cert_quote: "“A highly-developed values system is like a compass. It serves as a guide to point you in the right direction when you are lost.” – Idowu Koyenikan",
         cert_completed: "Completed on",
         btn_pdf: "Download PDF", btn_restart: "Start a New Journey", btn_back: "Back",
+        btn_share_twitter: "Share on X", btn_share_linkedin: "Share on LinkedIn",
         modal_title_confirm15: "You've selected 15 values!", modal_text_confirm15: "Are you ready to move on and refine your selection?",
         modal_title_confirm_removal: "Ready to Continue?", modal_text_confirm_removal: "This will lock in your choices for this step. Are you sure?",
         btn_modal_back: "Go Back", btn_modal_continue: "Continue"
       },
       es: {
         allValues: [ 'Aceptación', 'Agradecimiento', 'Alegría', 'Amabilidad', 'Ambición', 'Amistad', 'Amor', 'Aprendizaje', 'Apertura Mental', 'Armonía', 'Autoestima', 'Autenticidad', 'Calma', 'Colaboración', 'Comunidad', 'Compasión', 'Compromiso', 'Confianza', 'Conexión', 'Coherencia', 'Contribución', 'Coraje', 'Creatividad', 'Crecimiento', 'Curiosidad', 'Dar', 'Dedicación', 'Disciplina', 'Empatía', 'Equidad', 'Equilibrio', 'Esperanza', 'Excelencia', 'Familia', 'Fe', 'Felicidad', 'Flexibilidad', 'Generosidad', 'Gratitud', 'Honestidad', 'Humildad', 'Humor', 'Igualdad', 'Inclusión', 'Independencia', 'Influencia', 'Innovación', 'Integridad', 'Justicia', 'Lealtad', 'Liderazgo', 'Libertad', 'Logro', 'Motivación', 'Optimismo', 'Paciencia', 'Perdón', 'Perseverancia', 'Plenitud', 'Resiliencia', 'Responsabilidad', 'Sabiduría', 'Salud', 'Solidaridad', 'Valentía' ],
+        definitions: { 'Aceptación': 'Es la capacidad de aceptar las diferencias y opiniones de los demás sin juicio.', 'Agradecimiento': 'Es la actitud de apreciar y reconocer una ayuda o beneficio que se ha recibido y la intención de ser recíproco.', 'Alegría': 'Es la capacidad de tener una actitud positiva incluso ante las situaciones negativas de la vida.', 'Amabilidad': 'Es la capacidad de hacer el bien y demostrar amabilidad y cortesía.', 'Ambición': 'Es el impulso para tener éxito y avanzar.', 'Amistad': 'Es el valor de las relaciones cercanas y de apoyo.', 'Amor': 'Es el conjunto de expresiones, sentimientos y afecto que tienes, tanto con los demás como contigo mismo.', 'Aprendizaje': 'Es la capacidad de desarrollar nuevas habilidades y mejorarse a uno mismo.', 'Apertura Mental': 'Es la disposición a considerar nuevas ideas.', 'Armonía': 'Es el valor de la coexistencia pacífica.', 'Autoestima': 'Es el valor de valorarse a uno mismo.', 'Autenticidad': 'Es ser fiel a la propia personalidad, espíritu o carácter.', 'Calma': 'Es el estado de paz y compostura.', 'Colaboración': 'Es la capacidad de trabajar con otros para lograr un objetivo común.', 'Comunidad': 'Es el sentido de pertenencia y apoyo entre las personas.', 'Compasión': 'Es la capacidad de reconocer el sufrimiento ajeno y sentirse motivado a ayudar a reducirlo.', 'Compromiso': 'Es la dedicación a promesas y metas.', 'Confianza': 'Es la seguridad en las habilidades propias.', 'Conexión': 'Es construir relaciones significativas.', 'Coherencia': 'Es la constancia en el comportamiento y acciones.', 'Contribución': 'Es devolver a los demás o a la sociedad.', 'Coraje': 'Es la audacia en la adversidad.', 'Creatividad': 'Es generar ideas y expresiones originales.', 'Crecimiento': 'Es el desarrollo personal y progreso.', 'Curiosidad': 'Es el deseo de aprender y explorar.', 'Dar': 'Es compartir recursos o tiempo.', 'Dedicación': 'Es el esfuerzo persistente y cuidado en tareas.', 'Disciplina': 'Es el autocontrol y esfuerzo estructurado.', 'Empatía': 'Es la capacidad de identificarte con la situación o los sentimientos de otra persona.', 'Equidad': 'Es el tratamiento justo para todos.', 'Equilibrio': 'Es mantener el equilibrio en aspectos de la vida.', 'Esperanza': 'Es el optimismo para el futuro.', 'Excelencia': 'Es esforzarse por la más alta calidad.', 'Familia': 'Es priorizar los lazos familiares.', 'Fe': 'Es la creencia en algo mayor que uno mismo.', 'Felicidad': 'Es la actitud que apunta al disfrute de la vida, la satisfacción y el bienestar.', 'Flexibilidad': 'Es la adaptabilidad al cambio.', 'Generosidad': 'Es la disposición a dar libremente.', 'Gratitud': 'Es reconocer y valorar todas las cosas buenas y positivas que tienes en tu vida.', 'Honestidad': 'Es el valor de la honestidad está relacionado con la sinceridad contigo mismo y con los demás.', 'Humildad': 'Es la modestia y falta de arrogancia.', 'Humor': 'Es el sentido de diversión y ligereza.', 'Igualdad': 'Es el tratamiento justo para todos.', 'Inclusión': 'Es abrazar la diversidad y la pertenencia.', 'Independencia': 'Es la autosuficiencia.', 'Influencia': 'Es la capacidad para afectar a los demás.', 'Innovación': 'Es crear nuevas ideas o métodos.', 'Integridad': 'Es la virtud de mantener la coherencia entre lo que se dice y lo que se hace.', 'Justicia': 'Es la virtud de procurar que cada persona reciba lo que le corresponde.', 'Lealtad': 'Es la virtud de desarrollar un sentido de responsabilidad, cuidado y compromiso hacia las personas.', 'Liderazgo': 'Es guiar e inspirar a los demás.', 'Libertad': 'Es el poder que tienes de pensar y actuar de acuerdo con tu voluntad, sin restricciones.', 'Logro': 'Es lograr metas y hitos.', 'Motivación': 'Es el impulso para tener éxito y avanzar.', 'Optimismo': 'Es la capacidad de observar la realidad considerando las posibilidades y aspectos más favorables.', 'Paciencia': 'Es la capacidad de mantener la calma, esperar y tolerar situaciones adversas.', 'Perdón': 'Es la capacidad de reconciliarse con aquellas personas que han obrado de una manera incorrecta.', 'Perseverancia': 'Es la constancia y firmeza que tienes para cumplir las metas que te has planteado.', 'Plenitud': 'Es la satisfacción con lo que uno tiene.', 'Resiliencia': 'Es la capacidad para recuperarse de contratiempos.', 'Responsabilidad': 'Es la capacidad de cumplir con las obligaciones aceptadas y de asumir las consecuencias.', 'Sabiduría': 'Es la virtud de poseer conocimientos amplios y experiencia.', 'Salud': 'Es el bienestar del cuerpo y la mente.', 'Solidaridad': 'Es la capacidad de apoyar a quienes lo requieren.', 'Valentía': 'Es el coraje para enfrentar desafíos.' },
         lang_title: "Elige Tu Idioma", lang_subtitle: "Choose Your Language",
         welcome_title: "Bienvenido a Tu Exploración de Valores Esenciales",
         welcome_p1: "Tómate un momento para reconectarte con lo que realmente te guía. Para comenzar, por favor ingresa tu nombre.",
@@ -199,20 +201,56 @@
         cert_quote: "“Un sistema de valores altamente desarrollado es como una brújula. Sirve como una guía para señalarte la dirección correcta cuando estás perdido.” – Idowu Koyenikan",
         cert_completed: "Completado el",
         btn_pdf: "Descargar PDF", btn_restart: "Comenzar un nuevo recorrido de valores", btn_back: "Atrás",
+        btn_share_twitter: "Compartir en X", btn_share_linkedin: "Compartir en LinkedIn",
         modal_title_confirm15: "¡Has seleccionado 15 valores!", modal_text_confirm15: "¿Estás listo para continuar y refinar tu selección?",
         modal_title_confirm_removal: "¿Listo para Continuar?", modal_text_confirm_removal: "Esto guardará tus elecciones para este paso. ¿Estás seguro?",
         btn_modal_back: "Regresar", btn_modal_continue: "Continuar"
       }
     };
     let state = { language: 'en', firstName: '', lastName: '', initialSelection: new Set(), phase2_15: [], phase3_10: [], phase4_5: [], final_3: [], removalSelection: new Set() };
+    let muted = false;
     const modal = document.getElementById('confirmation-modal'); const modalTitle = document.getElementById('modal-title'); const modalText = document.getElementById('modal-text'); const modalConfirmBtn = document.getElementById('modal-btn-confirm');
-    
+    const chimeSound = new Audio('https://www.orangefreesounds.com/wp-content/uploads/2016/06/Chimes-sound-effect.mp3?v=2');
+    const confettiSound = new Audio('https://www.orangefreesounds.com/wp-content/uploads/2021/05/Victory-horn-sound-effect.mp3?v=2');
+    const ambientSound = new Audio('https://www.orangefreesounds.com/wp-content/uploads/2021/05/432-hz-music-meditative-ambient-warm-synth-pad.mp3?v=2');
+    ambientSound.loop = true; ambientSound.volume = 0.2;
+    function toggleMute() {
+      muted = !muted;
+      document.getElementById('mute-button').innerHTML = muted ? '🔇 Unmute' : '🔊 Mute';
+      if (muted) {
+        chimeSound.pause();
+        confettiSound.pause();
+        ambientSound.pause();
+      } else {
+        ambientSound.play();
+      }
+    }
+    function playIfNotMuted(audio) {
+      if (!muted) {
+        audio.currentTime = 0;
+        audio.play();
+      }
+    }
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        chimeSound.pause();
+        confettiSound.pause();
+        ambientSound.pause();
+      } else if (!muted) {
+        ambientSound.play();
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     function showPage(pageId) {
+        chimeSound.pause(); chimeSound.currentTime = 0;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         const page = document.getElementById(pageId);
         if (page) { page.classList.add('active'); }
+        if (pageId === 'page-final') {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          setTimeout(() => playIfNotMuted(confettiSound), 100);
+        }
     }
-    
     function translateUI() {
         const lang = state.language;
         document.querySelectorAll('[data-translate-key]').forEach(el => {
@@ -222,13 +260,11 @@
         document.getElementById('first-name-input').placeholder = translations[lang].placeholder_first_name;
         document.getElementById('last-name-input').placeholder = translations[lang].placeholder_last_name;
     }
-
     function selectLanguage(lang) {
         state.language = lang;
         translateUI();
         showPage('page-welcome');
     }
-
     function startJourney() {
         const firstNameInput = document.getElementById('first-name-input');
         const lastNameInput = document.getElementById('last-name-input');
@@ -247,19 +283,34 @@
         populateGrid('grid-select-15', translations[state.language].allValues, state.initialSelection); 
         updateCounter('counter-step1', state.initialSelection.size, 15, 'counter_selected'); 
         showPage('page-select-15');
+        playIfNotMuted(ambientSound);
     }
-    function restartJourney() { state = { language: 'en', firstName: '', lastName: '', initialSelection: new Set(), phase2_15: [], phase3_10: [], phase4_5: [], final_3: [], removalSelection: new Set() }; document.getElementById('first-name-input').value = ''; document.getElementById('last-name-input').value = ''; showPage('page-language'); }
+    function restartJourney() { state = { language: 'en', firstName: '', lastName: '', initialSelection: new Set(), phase2_15: [], phase3_10: [], phase4_5: [], final_3: [], removalSelection: new Set() }; document.getElementById('first-name-input').value = ''; document.getElementById('last-name-input').value = ''; ambientSound.pause(); showPage('page-language'); }
     function goBackToStep1() { showPage('page-select-15'); }
     function goBackToStep2() { state.removalSelection.clear(); populateGrid('grid-remove-5-from-15', state.phase2_15, new Set()); updateCounter('counter-step2', 0, 5, 'counter_removed'); showPage('page-remove-5-from-15'); }
     function goBackToStep3() { state.removalSelection.clear(); populateGrid('grid-remove-5-from-10', state.phase3_10, new Set()); updateCounter('counter-step3', 0, 5, 'counter_removed'); showPage('page-remove-5-from-10'); }
-    function showConfirmationModal(titleKey, textKey, confirmAction) { modalTitle.textContent = translations[state.language][titleKey]; modalText.textContent = translations[state.language][textKey]; modalConfirmBtn.onclick = () => { closeModal(); confirmAction(); }; document.getElementById('modal-btn-back').onclick = closeModal; modal.style.display = 'block'; }
+    function showConfirmationModal(titleKey, textKey, confirmAction) { modalTitle.textContent = translations[state.language][titleKey]; modalText.textContent = translations[state.language][textKey]; modalConfirmBtn.onclick = () => { closeModal(); confirmAction(); }; document.getElementById('modal-btn-back').onclick = closeModal; modal.style.display = 'block'; playIfNotMuted(chimeSound); }
     function closeModal() { modal.style.display = 'none'; }
     function updateCounter(counterId, current, total, actionKey) { const el = document.getElementById(counterId); if (el) el.textContent = `${current} / ${total} ${translations[state.language][actionKey]}`; }
     function populateGrid(gridId, values, selectionSet) {
-        const grid = document.getElementById(gridId); grid.innerHTML = ''; const isRemoval = gridId.startsWith('grid-remove');
+        const grid = document.getElementById(gridId); grid.innerHTML = ''; const isRemoval = gridId.startsWith('grid-remove'); const defs = translations[state.language].definitions;
         values.forEach(value => {
-            const card = document.createElement('div'); card.className = 'value-card'; card.textContent = value; card.dataset.value = value;
+            const card = document.createElement('div'); card.className = 'value-card'; card.textContent = value; card.dataset.value = value; card.title = defs[value] || '';
             if (selectionSet.has(value)) card.classList.add(isRemoval ? 'selected-red' : 'selected-green');
+            let touchTimer;
+            card.addEventListener('touchstart', (e) => {
+              touchTimer = setTimeout(() => {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.textContent = defs[value] || 'No definition available.';
+                tooltip.style.display = 'block';
+                let left = e.touches[0].pageX;
+                if (window.innerWidth - left < 210) left -= 210;
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${e.touches[0].pageY + 20}px`;
+              }, 500);
+            });
+            card.addEventListener('touchend', () => { clearTimeout(touchTimer); document.getElementById('tooltip').style.display = 'none'; });
+            card.addEventListener('touchmove', () => clearTimeout(touchTimer));
             card.addEventListener('click', () => {
                 if (gridId === 'grid-select-15') handleInitialSelection(card, 15);
                 else if (gridId === 'grid-remove-5-from-15') handleRemovalSelection(card, 5, 'step2');
@@ -272,7 +323,7 @@
     function handleInitialSelection(card, limit) {
         const value = card.dataset.value;
         if (state.initialSelection.has(value)) { state.initialSelection.delete(value); card.classList.remove('selected-green'); } 
-        else if (state.initialSelection.size < limit) { state.initialSelection.add(value); card.classList.add('selected-green'); }
+        else if (state.initialSelection.size < limit) { state.initialSelection.add(value); card.classList.add('selected-green'); card.classList.add('animate'); setTimeout(() => card.classList.remove('animate'), 300); }
         updateCounter('counter-step1', state.initialSelection.size, 15, 'counter_selected');
         if (state.initialSelection.size === limit) {
             showConfirmationModal('modal_title_confirm15', 'modal_text_confirm15',
@@ -283,7 +334,7 @@
     function handleRemovalSelection(card, limit, step) {
         const value = card.dataset.value;
         if (state.removalSelection.has(value)) { state.removalSelection.delete(value); card.classList.remove('selected-red'); } 
-        else if (state.removalSelection.size < limit) { state.removalSelection.add(value); card.classList.add('selected-red'); }
+        else if (state.removalSelection.size < limit) { state.removalSelection.add(value); card.classList.add('selected-red'); card.classList.add('animate'); setTimeout(() => card.classList.remove('animate'), 300); }
         let nextAction;
         if (step === 'step2') {
             updateCounter('counter-step2', state.removalSelection.size, 5, 'counter_removed');
@@ -329,6 +380,15 @@
             pdf.save(`${fullName}-Core-Values.pdf`);
         });
     }
+    function shareTwitter() {
+      const text = `My core values are ${state.final_3.join(', ')}! Discover yours at`;
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(location.href)}`, '_blank');
+    }
+    function shareLinkedIn() {
+      const title = 'My Core Values Certificate';
+      const summary = `I just completed my core values journey and my top values are ${state.final_3.join(', ')}.`;
+      window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(location.href)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}`, '_blank');
+    }
     document.addEventListener('DOMContentLoaded', restartJourney);
     document.addEventListener('keydown', (event) => {
       if (modal.style.display === 'block') {
@@ -341,4 +401,4 @@
     });
   </script>
 </body>
-</html></html>
+</html>
